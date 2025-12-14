@@ -1,26 +1,36 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ReadmoreWeb.Data.Models;
 
 namespace ReadmoreWeb.Data
 {
-    public class ReadmoreDbContext : DbContext
+    // Erft van IdentityDbContext om Identity-tabellen toe te voegen
+    public class ReadmoreDbContext : IdentityDbContext
     {
         public ReadmoreDbContext(DbContextOptions<ReadmoreDbContext> options)
             : base(options)
         {
         }
 
-        public DbSet<Book> Books { get; set; }    // Tabel voor boeken
-        public DbSet<Customer> Customers { get; set; }  // Tabel voor klanten
+        // Tabellen voor je app
+        public DbSet<Book> Books { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 
-        // Optional: Configure table names or relationships
+        // Optioneel: configureer tabelnamen en relaties
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder); // belangrijk voor Identity
 
-            // Bijvoorbeeld: stel tabelnaam expliciet in
+            // Expliciete tabelnamen
             modelBuilder.Entity<Book>().ToTable("Books");
             modelBuilder.Entity<Customer>().ToTable("Customers");
+
+            // Voorbeeld: configureer een relatie (optioneel)
+            // modelBuilder.Entity<Customer>()
+            //     .HasMany(c => c.Orders)
+            //     .WithOne(o => o.Customer)
+            //     .HasForeignKey(o => o.CustomerId);
         }
     }
 }
