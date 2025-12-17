@@ -14,7 +14,9 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">ReadMore Books</a>
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    ReadMore Books
+                </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                     <span class="navbar-toggler-icon"></span>
@@ -22,7 +24,6 @@
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -33,10 +34,18 @@
                                 <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">Books</a>
                             </li>
 
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Orders" asp-action="My">
+                                    Mijn bestellingen
+                                </a>
+                            </li>
+
                             @if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Users">Gebruikers</a>
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Users">
+                                        Gebruikers
+                                    </a>
                                 </li>
                             }
                         }
@@ -62,13 +71,14 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="btn btn-outline-primary btn-sm" asp-controller="Account" asp-action="Login">
+                                <a class="btn btn-outline-primary btn-sm"
+                                   asp-controller="Account"
+                                   asp-action="Login">
                                     Login
                                 </a>
                             </li>
                         }
                     </ul>
-
                 </div>
             </div>
         </nav>

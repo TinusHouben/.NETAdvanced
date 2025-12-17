@@ -1,0 +1,36 @@
+﻿@model IEnumerable<ReadmoreWeb.Data.Models.Order>
+
+<h2>Mijn bestellingen</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (!Model.Any())
+{
+    <p>Je hebt nog geen bestellingen.</p>
+}
+else
+{
+    foreach (var order in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div><strong>Bestelling:</strong> @order.Id</div>
+                <div><strong>Datum:</strong> @order.CreatedAt</div>
+
+                <ul class="mt-2 mb-0">
+                    @foreach (var item in order.Items)
+                    {
+                        <li>@item.Book?.Title - @item.Quantity x @item.UnitPrice</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+}

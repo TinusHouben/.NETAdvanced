@@ -17,7 +17,26 @@
                 <td>@book.Author</td>
                 <td>@book.Price</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                    <a asp-action="Details"
+                       asp-route-id="@book.Id"
+                       class="btn btn-sm btn-outline-secondary">
+                        Details
+                    </a>
+
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <form asp-controller="Orders"
+                              asp-action="Create"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="BookId" value="@book.Id" />
+                            <input type="hidden" name="Quantity" value="1" />
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                Bestel
+                            </button>
+                        </form>
+                    }
                 </td>
             </tr>
         }
