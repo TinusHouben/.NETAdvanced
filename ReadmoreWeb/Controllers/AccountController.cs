@@ -2,22 +2,25 @@
 using Microsoft.AspNetCore.Mvc;
 using ReadmoreWeb.Data.Models;
 using ReadmoreWeb.Models;
-using System.Threading.Tasks;
 
 namespace ReadmoreWeb.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(UserManager<IdentityUser> userManager,
-                                 SignInManager<IdentityUser> signInManager)
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
+        // =======================
+        // LOGIN
+        // =======================
         [HttpGet]
         public IActionResult Login()
         {
@@ -25,20 +28,30 @@ namespace ReadmoreWeb.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
+
             if (result.Succeeded)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            ModelState.AddModelError("", "Invalid login attempt");
+            ModelState.AddModelError("", "Ongeldige loginpoging");
             return View(model);
         }
 
+        // =======================
+        // REGISTER
+        // =======================
         [HttpGet]
         public IActionResult Register()
         {
@@ -46,14 +59,27 @@ namespace ReadmoreWeb.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
+
             var result = await _userManager.CreateAsync(user, model.Password);
+
             if (result.Succeeded)
             {
+                // ✅ AUTOMATISCHE ROL
+                await _userManager.AddToRoleAsync(user, "User");
+
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
@@ -62,10 +88,15 @@ namespace ReadmoreWeb.Controllers
             {
                 ModelState.AddModelError("", error.Description);
             }
+
             return View(model);
         }
 
+        // =======================
+        // LOGOUT
+        // =======================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
