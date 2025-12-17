@@ -1,53 +1,27 @@
 ﻿@model IEnumerable<ReadmoreWeb.Data.Models.Book>
 
-@{
-    ViewData["Title"] = "Index";
-}
+<h2>Boeken</h2>
 
-<h1>Index</h1>
+<input type="text" id="searchInput" class="form-control mb-3" placeholder="Zoek op titel of auteur..." />
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Author)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PublishedDate)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Author)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PublishedDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+<div id="booksContainer">
+    @await Html.PartialAsync("_BooksTable", Model)
+</div>
+
+@section Scripts {
+    <script>
+        const input = document.getElementById("searchInput");
+        const container = document.getElementById("booksContainer");
+
+        async function loadBooks() {
+            const query = input.value || "";
+            const response = await fetch(`/Books/Search?query=${encodeURIComponent(query)}`, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
+            const html = await response.text();
+            container.innerHTML = html;
+        }
+
+        input.addEventListener("keyup", loadBooks);
+    </script>
 }
-    </tbody>
-</table>

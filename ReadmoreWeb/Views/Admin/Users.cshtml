@@ -1,0 +1,44 @@
+﻿@model IEnumerable<ReadmoreWeb.Data.Models.ApplicationUser>
+
+<h2>Gebruikersbeheer</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actie</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    @(user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow
+                                    ? "Geblokkeerd"
+                                    : "Actief")
+            </td>
+            <td>
+                @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                    {
+                        <form asp-action="Unblock" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button class="btn btn-success btn-sm">Deblokkeren</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Block" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button class="btn btn-danger btn-sm">Blokkeren</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

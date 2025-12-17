@@ -14,14 +14,31 @@ namespace ReadmoreWeb.Controllers
             _context = context;
         }
 
-        // GET: Books
         public async Task<IActionResult> Index()
         {
             var books = await _context.Books.ToListAsync();
             return View(books);
         }
 
-        // GET: Books/Details/5
+        [HttpGet]
+        public async Task<IActionResult> Search(string query)
+        {
+            query = (query ?? string.Empty).Trim().ToLower();
+
+            var booksQuery = _context.Books.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                booksQuery = booksQuery.Where(b =>
+                    (b.Title != null && b.Title.ToLower().Contains(query)) ||
+                    (b.Author != null && b.Author.ToLower().Contains(query))
+                );
+            }
+
+            var books = await booksQuery.ToListAsync();
+            return PartialView("_BooksTable", books);
+        }
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -32,13 +49,11 @@ namespace ReadmoreWeb.Controllers
             return View(book);
         }
 
-        // GET: Books/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Books/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Author,Price,PublishedDate")] Book book)
@@ -50,7 +65,6 @@ namespace ReadmoreWeb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Books/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -61,7 +75,6 @@ namespace ReadmoreWeb.Controllers
             return View(book);
         }
 
-        // POST: Books/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,Price,PublishedDate")] Book book)
@@ -80,37 +93,4 @@ namespace ReadmoreWeb.Controllers
                 throw;
             }
 
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: Books/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
-            if (book == null) return NotFound();
-
-            return View(book);
-        }
-
-        // POST: Books/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var book = await _context.Books.FindAsync(id);
-            if (book != null)
-            {
-                _context.Books.Remove(book);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool BookExists(int id)
-        {
-            return _context.Books.Any(e => e.Id == id);
-        }
-    }
-}
+            return RedirectT

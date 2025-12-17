@@ -18,9 +18,6 @@ namespace ReadmoreWeb.Controllers
             _signInManager = signInManager;
         }
 
-        // =======================
-        // LOGIN
-        // =======================
         [HttpGet]
         public IActionResult Login()
         {
@@ -38,7 +35,13 @@ namespace ReadmoreWeb.Controllers
                 model.Email,
                 model.Password,
                 model.RememberMe,
-                lockoutOnFailure: false);
+                true);
+
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Dit account is geblokkeerd.");
+                return View(model);
+            }
 
             if (result.Succeeded)
             {
@@ -49,9 +52,6 @@ namespace ReadmoreWeb.Controllers
             return View(model);
         }
 
-        // =======================
-        // REGISTER
-        // =======================
         [HttpGet]
         public IActionResult Register()
         {
@@ -77,10 +77,8 @@ namespace ReadmoreWeb.Controllers
 
             if (result.Succeeded)
             {
-                // ✅ AUTOMATISCHE ROL
                 await _userManager.AddToRoleAsync(user, "User");
-
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.SignInAsync(user, false);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -92,9 +90,6 @@ namespace ReadmoreWeb.Controllers
             return View(model);
         }
 
-        // =======================
-        // LOGOUT
-        // =======================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()

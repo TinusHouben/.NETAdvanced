@@ -63,6 +63,7 @@ using (var scope = app.Services.CreateScope())
     var db = services.GetRequiredService<ReadmoreDbContext>();
     db.Database.Migrate();
     await IdentitySeeder.SeedRolesAndAdminAsync(services);
+    await BookSeeder.SeedAsync(db);
 }
 
 if (!app.Environment.IsDevelopment())
@@ -70,7 +71,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-//
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
