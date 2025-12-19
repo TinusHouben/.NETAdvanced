@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36623.8 d17.14
+VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadmoreWeb", "ReadmoreWeb\ReadmoreWeb.csproj", "{5045047A-8906-4D40-8098-00D2CB488E05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadmoreWeb.Data", "ReadmoreWeb.Data\ReadmoreWeb.Data.csproj", "{5A8BC24F-73EF-4B28-841F-042786E2BD3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadmoreMobile", "ReadmoreMobile\ReadmoreMobile.csproj", "{F1B7CA48-B8E9-43B1-B1B9-2ABE8DE54C26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5A8BC24F-73EF-4B28-841F-042786E2BD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A8BC24F-73EF-4B28-841F-042786E2BD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A8BC24F-73EF-4B28-841F-042786E2BD3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1B7CA48-B8E9-43B1-B1B9-2ABE8DE54C26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1B7CA48-B8E9-43B1-B1B9-2ABE8DE54C26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1B7CA48-B8E9-43B1-B1B9-2ABE8DE54C26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1B7CA48-B8E9-43B1-B1B9-2ABE8DE54C26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
