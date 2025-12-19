@@ -1,7 +1,9 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using ReadmoreMobile.Models;
 using ReadmoreMobile.Services;
+using ReadmoreMobile.Views;
 
 namespace ReadmoreMobile.ViewModels;
 
@@ -9,6 +11,7 @@ public class LoginViewModel : ObservableObject
 {
     private readonly AuthApi _auth;
     private readonly TokenStore _store;
+    private readonly IServiceProvider _services;
 
     private string email = "";
     public string Email { get => email; set => SetProperty(ref email, value); }
@@ -21,10 +24,11 @@ public class LoginViewModel : ObservableObject
 
     public ICommand LoginCommand { get; }
 
-    public LoginViewModel(AuthApi auth, TokenStore store)
+    public LoginViewModel(AuthApi auth, TokenStore store, IServiceProvider services)
     {
         _auth = auth;
         _store = store;
+        _services = services;
         LoginCommand = new Command(async () => await LoginAsync());
     }
 
@@ -45,6 +49,15 @@ public class LoginViewModel : ObservableObject
         }
 
         await _store.SaveAsync(data.Token, data.ExpiresAtUtc);
-        await Application.Current.MainPage.DisplayAlert("OK", $"Ingelogd als {data.Email}", "OK");
+
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            var booksPage = _services.GetRequiredService<BooksPage>();
+
+            if (Application.Current.MainPage is NavigationPage nav)
+                await nav.Navigation.PushAsync(booksPage);
+            else
+                Application.Current.MainPage = new NavigationPage(booksPage);
+        });
     }
 }

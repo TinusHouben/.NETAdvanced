@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReadmoreWeb.Data;
 using ReadmoreWeb.Data.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ReadmoreWeb.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // 🔐 API is beveiligd
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public class BooksApiController : ControllerBase
     {
         private readonly ReadmoreDbContext _context;
