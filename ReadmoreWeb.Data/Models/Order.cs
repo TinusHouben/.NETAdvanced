@@ -1,19 +1,23 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ReadmoreWeb.Data.Models
+namespace ReadmoreWeb.Data.Models;
+
+public class Order
 {
-    public class Order
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Required]
+    public string UserId { get; set; } = "";
 
-        [Required]
-        public string UserId { get; set; } = string.Empty;
+    public ApplicationUser? User { get; set; }
 
-        public ApplicationUser? User { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-        public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
-    }
+    public decimal TotalAmount { get; set; }
+
+    [Required]
+    [MaxLength(50)]
+    public string Status { get; set; } = "Created";
+
+    public List<OrderItem> Items { get; set; } = new();
 }

@@ -6,6 +6,7 @@ using ReadmoreWeb.Data;
 using ReadmoreWeb.Data.Models;
 using ReadmoreWeb.Data.Seed;
 using ReadmoreWeb.Middleware;
+using ReadmoreWeb.Services.Cart;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,10 +29,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
 })
-.AddJwtBearer(options =>
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     var jwt = builder.Configuration.GetSection("Jwt");
     var key = Encoding.UTF8.GetBytes(jwt["Key"]!);
@@ -80,6 +81,17 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddScoped<ICartService, CartService>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -104,6 +116,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 

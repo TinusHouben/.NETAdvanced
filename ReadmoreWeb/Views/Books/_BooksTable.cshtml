@@ -1,44 +1,61 @@
 ﻿@model IEnumerable<ReadmoreWeb.Data.Models.Book>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Titel</th>
-            <th>Auteur</th>
-            <th>Prijs</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var book in Model)
-        {
-            <tr>
-                <td>@book.Title</td>
-                <td>@book.Author</td>
-                <td>@book.Price</td>
-                <td>
-                    <a asp-action="Details"
-                       asp-route-id="@book.Id"
-                       class="btn btn-sm btn-outline-secondary">
-                        Details
-                    </a>
-
-                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:45%;">Titel</th>
+                    <th style="width:30%;">Auteur</th>
+                    <th style="width:10%;">Prijs</th>
+                    <th class="text-end" style="width:15%;">Acties</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">Geen boeken gevonden.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var b in Model)
                     {
-                        <form asp-controller="Orders"
-                              asp-action="Create"
-                              method="post"
-                              class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="BookId" value="@book.Id" />
-                            <input type="hidden" name="Quantity" value="1" />
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                Bestel
-                            </button>
-                        </form>
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@b.Title</div>
+                            </td>
+                            <td class="text-muted">@b.Author</td>
+                            <td>
+                                <span class="badge bg-secondary">@b.Price.ToString("0.00")</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-outline-secondary btn-sm"
+                                       asp-controller="Books" asp-action="Details" asp-route-id="@b.Id">Details</a>
+
+                                    <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+                                        <input type="hidden" name="bookId" value="@b.Id" />
+                                        <input type="hidden" name="quantity" value="1" />
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                        <button class="btn btn-primary btn-sm" type="submit">In mand</button>
+                                    </form>
+
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                                    {
+                                        <a class="btn btn-outline-primary btn-sm"
+                                           asp-controller="Books" asp-action="Edit" asp-route-id="@b.Id">Bewerk</a>
+
+                                        <a class="btn btn-outline-danger btn-sm"
+                                           asp-controller="Books" asp-action="Delete" asp-route-id="@b.Id">Verwijder</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
                     }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

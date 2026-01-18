@@ -4,85 +4,97 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReadmoreWeb.Data;
 using ReadmoreWeb.Data.Models;
-using ReadmoreWeb.Models;
+using ReadmoreWeb.Models.Cart;
+using ReadmoreWeb.Services.Cart;
 
-namespace ReadmoreWeb.Controllers
+namespace ReadmoreWeb.Controllers;
+
+[Authorize]
+public class OrdersController : Controller
 {
-    [Authorize]
-    public class OrdersController : Controller
+    private readonly ReadmoreDbContext _db;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ICartService _cart;
+
+    public OrdersController(ReadmoreDbContext db, UserManager<ApplicationUser> userManager, ICartService cart)
     {
-        private readonly ReadmoreDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
+        _db = db;
+        _userManager = userManager;
+        _cart = cart;
+    }
 
-        public OrdersController(ReadmoreDbContext context, UserManager<ApplicationUser> userManager)
+    [HttpGet]
+    public async Task<IActionResult> Checkout()
+    {
+        var vm = await _cart.GetAsync();
+        if (vm.Items.Count == 0)
         {
-            _context = context;
-            _userManager = userManager;
+            TempData["Error"] = "Je winkelmand is leeg.";
+            return RedirectToAction("Index", "Cart");
         }
 
-        public async Task<IActionResult> My()
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CheckoutConfirm()
+    {
+        var cart = await _cart.GetAsync();
+        if (cart.Items.Count == 0)
         {
-            var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-                return RedirectToAction("Login", "Account");
-
-            var orders = await _context.Orders
-                .Where(o => o.UserId == userId)
-                .Include(o => o.Items)
-                .ThenInclude(i => i.Book)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
-
-            return View(orders);
+            TempData["Error"] = "Je winkelmand is leeg.";
+            return RedirectToAction("Index", "Cart");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateOrderViewModel model)
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            if (!ModelState.IsValid)
-            {
-                TempData["Error"] = "Ongeldige bestelling.";
-                return RedirectToAction("Index", "Books");
-            }
-
-            var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-                return RedirectToAction("Login", "Account");
-
-            try
-            {
-                var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == model.BookId);
-                if (book == null)
-                {
-                    TempData["Error"] = "Boek niet gevonden.";
-                    return RedirectToAction("Index", "Books");
-                }
-
-                var order = new Order
-                {
-                    UserId = userId,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                order.Items.Add(new OrderItem
-                {
-                    BookId = book.Id,
-                    Quantity = model.Quantity,
-                    UnitPrice = book.Price
-                });
-
-                _context.Orders.Add(order);
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Bestelling geplaatst.";
-                return RedirectToAction(nameof(My));
-            }
-            catch
-            {
-                TempData["Error"] = "Er ging iets mis bij het plaatsen van je bestelling.";
-                return RedirectToAction("Index", "Books");
-            }
+            return Forbid();
         }
+
+        var order = new Order
+        {
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow,
+            TotalAmount = cart.Total,
+            Status = "Created"
+        };
+
+        foreach (var item in cart.Items)
+        {
+            order.Items.Add(new OrderItem
+            {
+                BookId = item.BookId,
+                Quantity = item.Quantity,
+                UnitPrice = item.Price,
+                LineTotal = item.Price * item.Quantity
+            });
+        }
+
+        _db.Orders.Add(order);
+        await _db.SaveChangesAsync();
+
+        await _cart.ClearAsync();
+
+        TempData["Success"] = "Bestelling geplaatst.";
+        return RedirectToAction("My");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> My()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return Forbid();
+
+        var orders = await _db.Orders
+            .AsNoTracking()
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Book)
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        return View(orders);
     }
 }

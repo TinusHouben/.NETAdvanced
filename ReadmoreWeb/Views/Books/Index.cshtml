@@ -1,27 +1,102 @@
 ﻿@model IEnumerable<ReadmoreWeb.Data.Models.Book>
 
-<h2>Boeken</h2>
+@{
+    ViewData["Title"] = "Boeken";
+}
 
-<input type="text" id="searchInput" class="form-control mb-3" placeholder="Zoek op titel of auteur..." />
+<div class="container py-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-0">Boeken</h1>
+            <div class="text-muted small">Zoek en bestel boeken</div>
+        </div>
 
-<div id="booksContainer">
-    @await Html.PartialAsync("_BooksTable", Model)
+        @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+        {
+            <div>
+                <a class="btn btn-primary" asp-controller="Books" asp-action="Create">Nieuw boek</a>
+            </div>
+        }
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-7">
+                    <div class="input-group">
+                        <span class="input-group-text">Zoek</span>
+                        <input id="searchInput" class="form-control" placeholder="Zoek op titel of auteur..." autocomplete="off" />
+                        <button id="clearBtn" class="btn btn-outline-secondary" type="button">Wissen</button>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-5 text-md-end">
+                    <span id="resultCount" class="text-muted small"></span>
+                    <span id="loading" class="ms-2 small text-muted" style="display:none;">Bezig...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="booksContainer">
+        @await Html.PartialAsync("_BooksTable", Model)
+    </div>
 </div>
 
 @section Scripts {
     <script>
-        const input = document.getElementById("searchInput");
-        const container = document.getElementById("booksContainer");
+        (function () {
+            var input = document.getElementById("searchInput");
+            var clearBtn = document.getElementById("clearBtn");
+            var container = document.getElementById("booksContainer");
+            var loading = document.getElementById("loading");
+            var resultCount = document.getElementById("resultCount");
+            var timer = null;
 
-        async function loadBooks() {
-            const query = input.value || "";
-            const response = await fetch(`/Books/Search?query=${encodeURIComponent(query)}`, {
-                headers: { "X-Requested-With": "XMLHttpRequest" }
+            function setLoading(isLoading) {
+                loading.style.display = isLoading ? "inline" : "none";
+            }
+
+            function updateCount() {
+                var rows = container.querySelectorAll("tbody tr");
+                resultCount.textContent = rows.length ? (rows.length + " resultaten") : "Geen resultaten";
+            }
+
+            function fetchResults(query) {
+                setLoading(true);
+
+                var url = "/Books/Search?query=" + encodeURIComponent(query || "");
+                fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                    .then(function (r) { return r.text(); })
+                    .then(function (html) {
+                        container.innerHTML = html;
+                        updateCount();
+                    })
+                    .catch(function () {
+                        container.innerHTML = '<div class="alert alert-danger">Er ging iets mis bij het laden van de resultaten.</div>';
+                        resultCount.textContent = "";
+                    })
+                    .finally(function () {
+                        setLoading(false);
+                    });
+            }
+
+            function debounceSearch() {
+                if (timer) window.clearTimeout(timer);
+                timer = window.setTimeout(function () {
+                    fetchResults(input.value);
+                }, 250);
+            }
+
+            input.addEventListener("input", debounceSearch);
+
+            clearBtn.addEventListener("click", function () {
+                input.value = "";
+                input.focus();
+                fetchResults("");
             });
-            const html = await response.text();
-            container.innerHTML = html;
-        }
 
-        input.addEventListener("keyup", loadBooks);
+            updateCount();
+        })();
     </script>
 }

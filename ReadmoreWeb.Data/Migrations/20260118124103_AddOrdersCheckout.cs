@@ -1,0 +1,52 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace ReadmoreWeb.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddOrdersCheckout : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "Status",
+                table: "Orders",
+                type: "TEXT",
+                maxLength: 50,
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "TotalAmount",
+                table: "Orders",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: 0m);
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "LineTotal",
+                table: "OrderItems",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: 0m);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "Status",
+                table: "Orders");
+
+            migrationBuilder.DropColumn(
+                name: "TotalAmount",
+                table: "Orders");
+
+            migrationBuilder.DropColumn(
+                name: "LineTotal",
+                table: "OrderItems");
+        }
+    }
+}

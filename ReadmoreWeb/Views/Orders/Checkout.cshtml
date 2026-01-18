@@ -1,0 +1,48 @@
+﻿@model ReadmoreWeb.Models.Cart.CartViewModel
+
+@{
+    ViewData["Title"] = "Afrekenen";
+}
+
+<div class="container py-4">
+    <h1 class="h3 mb-3">Afrekenen</h1>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Boek</th>
+                        <th style="width:120px;">Aantal</th>
+                        <th style="width:140px;">Subtotaal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.Title</div>
+                                <div class="text-muted small">@item.Author</div>
+                            </td>
+                            <td>@item.Quantity</td>
+                            <td>@((item.Price * item.Quantity).ToString("0.00"))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="2" class="text-end fw-semibold">Totaal</td>
+                        <td class="fw-semibold">@Model.Total.ToString("0.00")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <form asp-controller="Orders" asp-action="CheckoutConfirm" method="post">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-primary" type="submit">Bestelling plaatsen</button>
+        <a class="btn btn-outline-secondary" asp-controller="Cart" asp-action="Index">Terug</a>
+    </form>
+</div>
