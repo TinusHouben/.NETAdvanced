@@ -1,13 +1,20 @@
-using ReadmoreMobile.ViewModels;
+using ReadmoreMobile.Services;
 
 namespace ReadmoreMobile.Views;
 
 public partial class BooksPage : ContentPage
 {
-    public BooksPage(BooksViewModel vm)
+    private readonly IAuthService _auth;
+
+    public BooksPage()
     {
         InitializeComponent();
-        BindingContext = vm;
-        Loaded += async (_, _) => await vm.LoadAsync();
+        _auth = Application.Current!.Handler!.MauiContext!.Services.GetService<IAuthService>()!;
+    }
+
+    private async void Logout_Clicked(object sender, EventArgs e)
+    {
+        await _auth.LogoutAsync();
+        await Shell.Current.GoToAsync("login");
     }
 }

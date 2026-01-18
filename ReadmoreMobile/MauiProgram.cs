@@ -1,54 +1,48 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ReadmoreMobile.Services;
 using ReadmoreMobile.ViewModels;
 using ReadmoreMobile.Views;
 
-namespace ReadmoreMobile
+namespace ReadmoreMobile;
+
+public static class MauiProgram
 {
-    public static class MauiProgram
+    public static MauiApp CreateMauiApp()
     {
-        public static MauiApp CreateMauiApp()
+        var builder = MauiApp.CreateBuilder();
+        builder
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            });
+
+        builder.Services.AddSingleton(sp =>
         {
-            var builder = MauiApp.CreateBuilder();
+#if ANDROID
+            var baseUrl = "http://10.0.2.2:5031";
+#else
+            var baseUrl = "http://localhost:5031";
+#endif
+            var http = new HttpClient();
+            http.BaseAddress = new Uri(baseUrl);
+            return http;
+        });
 
-            builder
-                .UseMauiApp<App>()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
+        builder.Services.AddSingleton<IAuthService, AuthService>();
 
-            builder.Configuration.AddJsonFile(
-                "appsettings.json",
-                optional: false,
-                reloadOnChange: false);
+        builder.Services.AddSingleton<AppShell>();
 
-            var apiBaseUrl = builder.Configuration["ApiBaseUrl"]!;
+        builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddTransient<LoginPage>();
 
-            builder.Services.AddSingleton<TokenStore>();
-            builder.Services.AddTransient<AuthHandler>();
-
-            builder.Services.AddHttpClient(
-                    "api",
-                    c => c.BaseAddress = new Uri(apiBaseUrl))
-                .AddHttpMessageHandler<AuthHandler>();
-
-            builder.Services.AddSingleton<AuthApi>();
-
-            builder.Services.AddSingleton<BooksApi>();
-            builder.Services.AddTransient<BooksViewModel>();
-            builder.Services.AddTransient<BooksPage>();
-
-            builder.Services.AddTransient<LoginViewModel>();
-            builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<BooksPage>();
 
 #if DEBUG
-            builder.Logging.AddDebug();
+        builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
-        }
+        return builder.Build();
     }
 }

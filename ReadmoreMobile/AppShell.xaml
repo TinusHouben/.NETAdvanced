@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:ReadmoreMobile.Views">
 
-    <ShellContent Route="login" ContentTemplate="{DataTemplate views:LoginPage}" />
-    <ShellContent Route="books" ContentTemplate="{DataTemplate views:BooksPage}" />
+    <ShellContent
+        Route="login"
+        ContentTemplate="{DataTemplate views:LoginPage}" />
 </Shell>

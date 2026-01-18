@@ -1,13 +1,10 @@
-﻿using ReadmoreMobile.Views;
+﻿namespace ReadmoreMobile;
 
-namespace ReadmoreMobile
+public partial class App : Application
 {
-    public partial class App : Application
+    public App(AppShell shell)
     {
-        public App(LoginPage loginPage)
-        {
-            InitializeComponent();
-            MainPage = new NavigationPage(loginPage);
-        }
+        InitializeComponent();
+        MainPage = shell;
     }
 }

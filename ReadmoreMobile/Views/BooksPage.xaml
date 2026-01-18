@@ -1,18 +1,14 @@
 <ContentPage
     x:Class="ReadmoreMobile.Views.BooksPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:services="clr-namespace:ReadmoreMobile.Services"
+    Title="Books">
 
-    <CollectionView ItemsSource="{Binding Books}"
-                    SelectionMode="None">
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <VerticalStackLayout Padding="10">
-                    <Label Text="{Binding Title}"
-                           FontAttributes="Bold" />
-                    <Label Text="{Binding Author}" />
-                </VerticalStackLayout>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-    </CollectionView>
+    <VerticalStackLayout Padding="20" Spacing="12">
+        <Label Text="Books page" FontSize="24" />
+        <Label Text="Auto-login works if token exists." />
+
+        <Button Text="Logout" Clicked="Logout_Clicked" />
+    </VerticalStackLayout>
 </ContentPage>

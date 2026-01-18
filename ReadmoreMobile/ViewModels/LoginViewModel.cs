@@ -1,63 +1,46 @@
-﻿using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
-using ReadmoreMobile.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ReadmoreMobile.Services;
-using ReadmoreMobile.Views;
 
 namespace ReadmoreMobile.ViewModels;
 
-public class LoginViewModel : ObservableObject
+public partial class LoginViewModel : ObservableObject
 {
-    private readonly AuthApi _auth;
-    private readonly TokenStore _store;
-    private readonly IServiceProvider _services;
+    private readonly IAuthService _auth;
 
+    [ObservableProperty]
     private string email = "";
-    public string Email { get => email; set => SetProperty(ref email, value); }
 
+    [ObservableProperty]
     private string password = "";
-    public string Password { get => password; set => SetProperty(ref password, value); }
 
-    private string error = "";
-    public string Error { get => error; set => SetProperty(ref error, value); }
+    [ObservableProperty]
+    private string errorMessage = "";
 
-    public ICommand LoginCommand { get; }
-
-    public LoginViewModel(AuthApi auth, TokenStore store, IServiceProvider services)
+    public LoginViewModel(IAuthService auth)
     {
         _auth = auth;
-        _store = store;
-        _services = services;
-        LoginCommand = new Command(async () => await LoginAsync());
     }
 
+    [RelayCommand]
     private async Task LoginAsync()
     {
-        Error = "";
+        ErrorMessage = "";
 
-        var (data, err) = await _auth.LoginAsync(new LoginRequestDto
+        try
         {
-            Email = Email,
-            Password = Password
-        });
+            var token = await _auth.LoginAsync(Email, Password);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                ErrorMessage = "Login mislukt";
+                return;
+            }
 
-        if (data is null)
-        {
-            Error = err ?? "Login mislukt";
-            return;
+            await Shell.Current.GoToAsync("books");
         }
-
-        await _store.SaveAsync(data.Token, data.ExpiresAtUtc);
-
-        await MainThread.InvokeOnMainThreadAsync(async () =>
+        catch (Exception ex)
         {
-            var booksPage = _services.GetRequiredService<BooksPage>();
-
-            if (Application.Current.MainPage is NavigationPage nav)
-                await nav.Navigation.PushAsync(booksPage);
-            else
-                Application.Current.MainPage = new NavigationPage(booksPage);
-        });
+            ErrorMessage = ex.Message;
+        }
     }
 }
