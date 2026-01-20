@@ -2,20 +2,19 @@
 
 namespace ReadmoreMobile.Services;
 
-public sealed class AuthHandler : DelegatingHandler
+public class AuthHandler : DelegatingHandler
 {
-    private readonly TokenStore _store;
+    private readonly TokenStore _tokenStore;
 
-    public AuthHandler(TokenStore store)
+    public AuthHandler(TokenStore tokenStore)
     {
-        _store = store;
+        _tokenStore = tokenStore;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var (token, exp) = await _store.GetAsync();
-
-        if (!string.IsNullOrWhiteSpace(token) && exp is not null && exp > DateTime.UtcNow)
+        var token = await _tokenStore.GetTokenAsync();
+        if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         return await base.SendAsync(request, cancellationToken);

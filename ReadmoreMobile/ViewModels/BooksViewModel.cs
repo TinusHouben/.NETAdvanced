@@ -1,32 +1,40 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using ReadmoreMobile.Services;
-using ReadmoreWeb.Data.Models;
-using System.Collections.ObjectModel;
 
 namespace ReadmoreMobile.ViewModels;
 
-public partial class BooksViewModel : ObservableObject
+public class BooksViewModel : BaseViewModel
 {
     private readonly BooksApi _api;
 
-    [ObservableProperty]
-    private bool isBusy;
+    public ObservableCollection<BookDto> Books { get; } = new();
 
-    public ObservableCollection<Book> Books { get; } = new();
+    public ICommand LoadCommand { get; }
 
-    public BooksViewModel(BooksApi api) => _api = api;
+    public BooksViewModel(BooksApi api)
+    {
+        _api = api;
+        LoadCommand = new Command(async () => await LoadAsync());
+    }
 
-    [RelayCommand]
     public async Task LoadAsync()
     {
-        if (IsBusy) return;
+        if (IsBusy)
+            return;
+
         IsBusy = true;
 
-        Books.Clear();
-        foreach (var b in await _api.GetAsync())
-            Books.Add(b);
-
-        IsBusy = false;
+        try
+        {
+            var items = await _api.GetBooksAsync();
+            Books.Clear();
+            foreach (var item in items)
+                Books.Add(item);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

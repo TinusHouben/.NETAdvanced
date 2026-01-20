@@ -4,19 +4,21 @@ namespace ReadmoreMobile.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly HttpClient _http;
-    private const string TokenKey = "jwt_token";
+    private readonly IHttpClientFactory _factory;
+    private readonly TokenStore _tokenStore;
 
-    public AuthService(HttpClient http)
+    public AuthService(IHttpClientFactory factory, TokenStore tokenStore)
     {
-        _http = http;
+        _factory = factory;
+        _tokenStore = tokenStore;
     }
 
     public async Task<string?> LoginAsync(string email, string password)
     {
+        var http = _factory.CreateClient("api");
         var payload = new { Email = email, Password = password };
 
-        var resp = await _http.PostAsJsonAsync("/api/Auth/login", payload);
+        var resp = await http.PostAsJsonAsync("api/Auth/login", payload);
         if (!resp.IsSuccessStatusCode)
             return null;
 
@@ -24,25 +26,18 @@ public class AuthService : IAuthService
         if (dto == null || string.IsNullOrWhiteSpace(dto.Token))
             return null;
 
-        await SecureStorage.SetAsync(TokenKey, dto.Token);
+        await _tokenStore.SaveAsync(dto.Token);
         return dto.Token;
     }
 
-    public async Task<string?> GetTokenAsync()
+    public Task<string?> GetTokenAsync()
     {
-        try
-        {
-            return await SecureStorage.GetAsync(TokenKey);
-        }
-        catch
-        {
-            return null;
-        }
+        return _tokenStore.GetTokenAsync();
     }
 
     public Task LogoutAsync()
     {
-        SecureStorage.Remove(TokenKey);
+        _tokenStore.Clear();
         return Task.CompletedTask;
     }
 

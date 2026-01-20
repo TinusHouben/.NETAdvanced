@@ -18,26 +18,34 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        builder.Services.AddSingleton(sp =>
-        {
+        builder.Services.AddSingleton<TokenStore>();
+        builder.Services.AddTransient<AuthHandler>();
+
 #if ANDROID
-            var baseUrl = "http://10.0.2.2:5031";
+        var baseUrl = "http://10.0.2.2:5031/";
 #else
-            var baseUrl = "http://localhost:5031";
+        var baseUrl = "http://localhost:5031/";
 #endif
-            var http = new HttpClient();
-            http.BaseAddress = new Uri(baseUrl);
-            return http;
-        });
+
+        builder.Services
+            .AddHttpClient("api", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+            })
+            .AddHttpMessageHandler<AuthHandler>();
+
+        builder.Services.AddTransient<AuthApi>();
+        builder.Services.AddTransient<BooksApi>();
 
         builder.Services.AddSingleton<IAuthService, AuthService>();
-
-        builder.Services.AddSingleton<AppShell>();
 
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<LoginPage>();
 
+        builder.Services.AddTransient<BooksViewModel>();
         builder.Services.AddTransient<BooksPage>();
+
+        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();
