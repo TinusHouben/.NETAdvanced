@@ -1,0 +1,52 @@
+﻿@model List<ReadmoreWeb.Data.Models.ContactMessage>
+@{
+    ViewData["Title"] = "Mijn contactberichten";
+}
+
+<h2>Mijn contactberichten</h2>
+
+@if (!Model.Any())
+{
+    <p>Je hebt nog geen contactberichten.</p>
+}
+else
+{
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Onderwerp</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.Id</td>
+                    <td>@m.Subject</td>
+                    <td>
+                        @if (m.Status == "Resolved")
+                        {
+                            <span class="badge bg-success">Resolved</span>
+                        }
+                        else if (m.Status == "InProgress")
+                        {
+                            <span class="badge bg-warning text-dark">InProgress</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">New</span>
+                        }
+                    </td>
+                    <td>@m.CreatedAt</td>
+                    <td>
+                        <a class="btn btn-sm btn-secondary" asp-action="Details" asp-route-id="@m.Id">Open chat</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

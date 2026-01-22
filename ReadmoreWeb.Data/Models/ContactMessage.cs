@@ -19,7 +19,7 @@ public class ContactMessage
     public string? Phone { get; set; }
 
     [Required, MaxLength(20)]
-    public string Status { get; set; } = "New"; 
+    public string Status { get; set; } = "New";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -27,4 +27,6 @@ public class ContactMessage
 
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }
+
+    public List<ContactReply> Replies { get; set; } = new();
 }

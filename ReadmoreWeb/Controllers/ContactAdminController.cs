@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReadmoreWeb.Data;
+using ReadmoreWeb.Data.Models;
 
 namespace ReadmoreWeb.Controllers;
 
@@ -19,6 +20,7 @@ public class ContactAdminController : Controller
     {
         var q = _db.ContactMessages
             .Include(m => m.User)
+            .AsNoTracking()
             .AsQueryable();
 
         if (status != "All")
@@ -37,10 +39,47 @@ public class ContactAdminController : Controller
     {
         var msg = await _db.ContactMessages
             .Include(m => m.User)
+            .Include(m => m.Replies.OrderBy(r => r.CreatedAt))
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (msg == null) return NotFound();
         return View(msg);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reply(int id, string text)
+    {
+        text = (text ?? "").Trim();
+        if (text.Length == 0)
+        {
+            TempData["Error"] = "Je bericht is leeg.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var msg = await _db.ContactMessages.FirstOrDefaultAsync(m => m.Id == id);
+        if (msg == null) return NotFound();
+
+        if (msg.Status == "Resolved")
+        {
+            TempData["Error"] = "Dit ticket is al opgelost.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        _db.ContactReplies.Add(new ContactReply
+        {
+            ContactMessageId = id,
+            Text = text,
+            Sender = "Admin",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        if (msg.Status == "New") msg.Status = "InProgress";
+
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = "Antwoord verstuurd.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     [HttpPost]
@@ -70,10 +109,15 @@ public class ContactAdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var msg = await _db.ContactMessages.FirstOrDefaultAsync(m => m.Id == id);
+        var msg = await _db.ContactMessages
+            .Include(m => m.Replies)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
         if (msg == null) return NotFound();
 
+        _db.ContactReplies.RemoveRange(msg.Replies);
         _db.ContactMessages.Remove(msg);
+
         await _db.SaveChangesAsync();
 
         TempData["Success"] = "Contactbericht verwijderd.";

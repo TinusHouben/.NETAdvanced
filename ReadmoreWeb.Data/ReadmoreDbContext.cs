@@ -16,6 +16,8 @@ namespace ReadmoreWeb.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
+        public DbSet<ContactReply> ContactReplies { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

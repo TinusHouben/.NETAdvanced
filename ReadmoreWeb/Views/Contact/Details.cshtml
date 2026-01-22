@@ -1,0 +1,94 @@
+﻿@model ReadmoreWeb.Data.Models.ContactMessage
+@{
+    ViewData["Title"] = "Contact chat";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+                <h2 class="mb-1">@Model.Subject</h2>
+                <div class="text-muted">Ticket #@Model.Id • @Model.CreatedAt</div>
+            </div>
+
+            <div>
+                @if (Model.Status == "Resolved")
+                {
+                    <span class="badge bg-success fs-6">Resolved</span>
+                }
+                else if (Model.Status == "InProgress")
+                {
+                    <span class="badge bg-warning text-dark fs-6">InProgress</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger fs-6">New</span>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Jouw originele bericht</div>
+                <div style="white-space: pre-line">@Model.Message</div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-body">
+                <h5 class="mb-3">Chat</h5>
+
+                @if (Model.Replies == null || Model.Replies.Count == 0)
+                {
+                    <div class="text-muted">Nog geen antwoorden.</div>
+                }
+                else
+                {
+                    foreach (var r in Model.Replies.OrderBy(r => r.CreatedAt))
+                    {
+                        var isAdmin = r.Sender == "Admin";
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <div class="fw-semibold">
+                                    @(isAdmin ? "Admin" : "Jij")
+                                </div>
+                                <div class="text-muted small">@r.CreatedAt</div>
+                            </div>
+                            <div class="p-3 rounded border @(isAdmin ? "bg-light" : "")" style="white-space: pre-line">
+                                @r.Text
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        @if (Model.Status != "Resolved")
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-action="Reply" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <label class="form-label fw-semibold">Nieuw bericht</label>
+                        <textarea name="text" class="form-control mb-2" rows="4" placeholder="Typ je bericht..."></textarea>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-send"></i> Verstuur
+                            </button>
+                            <a class="btn btn-outline-secondary" asp-action="My">Terug</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+        else
+        {
+            <a class="btn btn-outline-secondary" asp-action="My">Terug</a>
+        }
+
+    </div>
+</div>
