@@ -1,61 +1,82 @@
-﻿@model List<ReadmoreWeb.Data.Models.ContactMessage>
+﻿@model IEnumerable<ReadmoreWeb.Data.Models.ContactMessage>
+
 @{
     ViewData["Title"] = "Contactbeheer";
 }
 
-<h2>Contactbeheer</h2>
+<h2 class="mb-3">Contactbeheer</h2>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <select class="form-select" name="status">
-            <option value="All" selected="@(ViewBag.Status == "All" ? "selected" : null)">Alle</option>
-            <option value="New" selected="@(ViewBag.Status == "New" ? "selected" : null)">New</option>
-            <option value="InProgress" selected="@(ViewBag.Status == "InProgress" ? "selected" : null)">InProgress</option>
-            <option value="Resolved" selected="@(ViewBag.Status == "Resolved" ? "selected" : null)">Resolved</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100" type="submit">Filter</button>
-    </div>
-</form>
-
-<table class="table table-sm align-middle">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Onderwerp</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Datum</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var m in Model)
-        {
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
             <tr>
-                <td>@m.Id</td>
-                <td>@m.Subject</td>
-                <td>@m.Email</td>
-                <td>
-                    @if (m.Status == "Resolved")
-                    {
-                        <span class="badge bg-success">Resolved</span>
-                    }
-                    else if (m.Status == "InProgress")
-                    {
-                        <span class="badge bg-warning text-dark">InProgress</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">New</span>
-                    }
-                </td>
-                <td>@m.CreatedAt</td>
-                <td>
-                    <a class="btn btn-sm btn-secondary" asp-action="Details" asp-route-id="@m.Id">Details</a>
-                </td>
+                <th>Id</th>
+                <th>Klant</th>
+                <th>Email</th>
+                <th>Onderwerp</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th class="text-end">Acties</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+
+                    <td>
+                        @if (item.User != null)
+                        {
+                            @($"{item.User.FirstName} {item.User.LastName}")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
+
+                    <td>@item.Email</td>
+
+                    <td>@item.Subject</td>
+
+                    <td>
+                        @switch (item.Status)
+                        {
+                            case "New":
+                                <span class="badge bg-danger">New</span>
+                                break;
+                            case "InProgress":
+                                <span class="badge bg-warning text-dark">In progress</span>
+                                break;
+                            case "Resolved":
+                                <span class="badge bg-success">Resolved</span>
+                                break;
+                            default:
+                                <span class="badge bg-secondary">@item.Status</span>
+                                break;
+                        }
+                    </td>
+
+                    <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td class="text-end">
+                        <a asp-controller="ContactAdmin"
+                           asp-action="Details"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-outline-primary me-1">
+                            Details
+                        </a>
+
+                        <a asp-controller="ContactAdmin"
+                           asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-outline-danger">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

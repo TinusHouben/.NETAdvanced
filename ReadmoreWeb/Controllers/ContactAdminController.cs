@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReadmoreWeb.Data;
-using ReadmoreWeb.Data.Models;
 
 namespace ReadmoreWeb.Controllers;
 
@@ -16,6 +15,7 @@ public class ContactAdminController : Controller
         _db = db;
     }
 
+    [HttpGet]
     public async Task<IActionResult> Index(string status = "All")
     {
         var q = _db.ContactMessages
@@ -35,6 +35,7 @@ public class ContactAdminController : Controller
         return View(messages);
     }
 
+    [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
         var msg = await _db.ContactMessages
@@ -74,7 +75,7 @@ public class ContactAdminController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        _db.ContactReplies.Add(new ContactReply
+        _db.ContactReplies.Add(new Data.Models.ContactReply
         {
             ContactMessageId = id,
             Text = text,
@@ -113,5 +114,38 @@ public class ContactAdminController : Controller
 
         TempData["Success"] = $"Status aangepast naar {status}.";
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var msg = await _db.ContactMessages
+            .AsNoTracking()
+            .Include(m => m.User)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (msg == null) return NotFound();
+
+        return View(msg);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var msg = await _db.ContactMessages
+            .Include(m => m.Replies)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (msg == null) return NotFound();
+
+        if (msg.Replies != null && msg.Replies.Count > 0)
+            _db.ContactReplies.RemoveRange(msg.Replies);
+
+        _db.ContactMessages.Remove(msg);
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = "Ticket verwijderd.";
+        return RedirectToAction(nameof(Index));
     }
 }

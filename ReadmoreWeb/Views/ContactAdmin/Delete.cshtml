@@ -1,0 +1,50 @@
+﻿@model ReadmoreWeb.Data.Models.ContactMessage
+
+@{
+    ViewData["Title"] = "Ticket verwijderen";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h3 class="mb-3">Ticket verwijderen</h3>
+
+            <div class="alert alert-warning">
+                Ben je zeker dat je dit ticket wil verwijderen? Dit verwijdert ook alle antwoorden.
+            </div>
+
+            <dl class="row mb-4">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3">Klant</dt>
+                <dd class="col-sm-9">@((Model.User != null) ? (Model.User.FirstName + " " + Model.User.LastName) : "-")</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Onderwerp</dt>
+                <dd class="col-sm-9">@Model.Subject</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">@Model.Status</dd>
+
+                <dt class="col-sm-3">Aangemaakt</dt>
+                <dd class="col-sm-9">@Model.CreatedAt</dd>
+            </dl>
+
+            <form asp-action="DeleteConfirmed" method="post" class="d-flex gap-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+
+                <button type="submit" class="btn btn-danger">
+                    Verwijderen
+                </button>
+
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Annuleren
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
