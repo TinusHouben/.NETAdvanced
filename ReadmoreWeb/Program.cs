@@ -7,6 +7,7 @@ using ReadmoreWeb.Data.Models;
 using ReadmoreWeb.Data.Seed;
 using ReadmoreWeb.Middleware;
 using ReadmoreWeb.Services.Cart;
+using ReadmoreWeb.Services.Orders;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -97,6 +98,8 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<ICartService, CartService>();
+
+builder.Services.AddScoped<IOrderAdminService, OrderAdminService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
