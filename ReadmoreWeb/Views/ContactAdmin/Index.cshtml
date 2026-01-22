@@ -1,0 +1,61 @@
+﻿@model List<ReadmoreWeb.Data.Models.ContactMessage>
+@{
+    ViewData["Title"] = "Contactbeheer";
+}
+
+<h2>Contactbeheer</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <select class="form-select" name="status">
+            <option value="All" selected="@(ViewBag.Status == "All" ? "selected" : null)">Alle</option>
+            <option value="New" selected="@(ViewBag.Status == "New" ? "selected" : null)">New</option>
+            <option value="InProgress" selected="@(ViewBag.Status == "InProgress" ? "selected" : null)">InProgress</option>
+            <option value="Resolved" selected="@(ViewBag.Status == "Resolved" ? "selected" : null)">Resolved</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Filter</button>
+    </div>
+</form>
+
+<table class="table table-sm align-middle">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Onderwerp</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Datum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.Id</td>
+                <td>@m.Subject</td>
+                <td>@m.Email</td>
+                <td>
+                    @if (m.Status == "Resolved")
+                    {
+                        <span class="badge bg-success">Resolved</span>
+                    }
+                    else if (m.Status == "InProgress")
+                    {
+                        <span class="badge bg-warning text-dark">InProgress</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">New</span>
+                    }
+                </td>
+                <td>@m.CreatedAt</td>
+                <td>
+                    <a class="btn btn-sm btn-secondary" asp-action="Details" asp-route-id="@m.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

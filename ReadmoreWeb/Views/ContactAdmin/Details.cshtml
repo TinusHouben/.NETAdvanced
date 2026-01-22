@@ -1,0 +1,109 @@
+﻿@model ReadmoreWeb.Data.Models.ContactMessage
+@{
+    ViewData["Title"] = "Contactdetails";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 class="mb-1">Contactbericht #@Model.Id</h2>
+                        <div class="text-muted">@Model.CreatedAt</div>
+                    </div>
+
+                    <div>
+                        @if (Model.Status == "Resolved")
+                        {
+                            <span class="badge bg-success fs-6">Resolved</span>
+                        }
+                        else if (Model.Status == "InProgress")
+                        {
+                            <span class="badge bg-warning text-dark fs-6">InProgress</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6">New</span>
+                        }
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="text-muted small">Onderwerp</div>
+                            <div class="fw-semibold">@Model.Subject</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="text-muted small">Email</div>
+                            <div class="fw-semibold">@Model.Email</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="text-muted small">Telefoon</div>
+                            <div class="fw-semibold">@((Model.Phone ?? "").Trim().Length == 0 ? "-" : Model.Phone)</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="text-muted small">User</div>
+                            <div class="fw-semibold">@Model.User?.Email</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="text-muted small">Bericht</div>
+                            <div style="white-space: pre-line" class="fw-semibold">@Model.Message</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="SetStatus" method="post" class="card p-3 mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <label class="form-label fw-semibold">Status aanpassen</label>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <select class="form-select" name="status">
+                                <option value="New" selected="@(Model.Status == "New" ? "selected" : null)">New</option>
+                                <option value="InProgress" selected="@(Model.Status == "InProgress" ? "selected" : null)">InProgress</option>
+                                <option value="Resolved" selected="@(Model.Status == "Resolved" ? "selected" : null)">Resolved</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-primary w-100" type="submit">Opslaan</button>
+                        </div>
+                    </div>
+                </form>
+
+                <form asp-action="Delete" method="post" class="d-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <a class="btn btn-outline-secondary" asp-action="Index">
+                        Terug
+                    </a>
+
+                    <button class="btn btn-danger" type="submit">
+                        <i class="bi bi-trash"></i> Verwijderen
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>

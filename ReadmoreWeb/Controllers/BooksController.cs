@@ -49,6 +49,7 @@ namespace ReadmoreWeb.Controllers
             return View(book);
         }
 
+
         public IActionResult Create()
         {
             return View();
@@ -56,14 +57,17 @@ namespace ReadmoreWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Author,Price,PublishedDate")] Book book)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Title,Author,Price,PublishedDate,Description")] Book book)
         {
-            if (!ModelState.IsValid) return View(book);
+            if (!ModelState.IsValid)
+                return View(book);
 
             _context.Add(book);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         public async Task<IActionResult> Edit(int? id)
         {
@@ -77,7 +81,9 @@ namespace ReadmoreWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,Price,PublishedDate")] Book book)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("Id,Title,Author,Price,PublishedDate,Description")] Book book)
         {
             if (id != book.Id) return NotFound();
             if (!ModelState.IsValid) return View(book);
@@ -95,6 +101,7 @@ namespace ReadmoreWeb.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
 
         public async Task<IActionResult> Delete(int? id)
         {
@@ -116,6 +123,7 @@ namespace ReadmoreWeb.Controllers
                 _context.Books.Remove(book);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction(nameof(Index));
         }
 

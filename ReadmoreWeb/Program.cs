@@ -7,6 +7,7 @@ using ReadmoreWeb.Data.Models;
 using ReadmoreWeb.Data.Seed;
 using ReadmoreWeb.Middleware;
 using ReadmoreWeb.Services.Cart;
+using ReadmoreWeb.Services.Contact;
 using ReadmoreWeb.Services.Orders;
 using System.Text;
 
@@ -100,6 +101,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddScoped<IOrderAdminService, OrderAdminService>();
+
+builder.Services.AddScoped<IContactAdminService, ContactAdminService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
