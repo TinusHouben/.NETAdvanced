@@ -30,26 +30,20 @@
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
+                                    Home
+                                </a>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">Books</a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">Winkelmand</a>
+                                <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">
+                                    Books
+                                </a>
                             </li>
 
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Orders" asp-action="My">
                                     Mijn bestellingen
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">
-                                    Profiel
                                 </a>
                             </li>
 
@@ -78,16 +72,35 @@
                         }
                     </ul>
 
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <span class="navbar-text me-3">
+                            <li class="nav-item me-2">
+                                <a class="nav-link text-dark position-relative"
+                                   asp-controller="Cart"
+                                   asp-action="Index"
+                                   title="Winkelmand">
+                                    <i class="bi bi-cart3 fs-5"></i>
+                                </a>
+                            </li>
+
+                            <li class="nav-item me-2">
+                                <a class="nav-link text-dark"
+                                   asp-controller="Profile"
+                                   asp-action="Index"
+                                   title="Profiel">
+                                    <i class="bi bi-person-circle fs-5"></i>
+                                </a>
+                            </li>
+
+                            <li class="nav-item me-3 d-none d-sm-block">
+                                <span class="navbar-text text-muted small">
                                     @User.Identity.Name
                                 </span>
                             </li>
+
                             <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-outline-danger btn-sm">
                                         Logout
@@ -114,21 +127,15 @@
     <div class="container">
         @if (TempData["Message"] != null)
         {
-            <div class="alert alert-info mt-2">
-                @TempData["Message"]
-            </div>
+            <div class="alert alert-info mt-2">@TempData["Message"]</div>
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger mt-2">
-                @TempData["Error"]
-            </div>
+            <div class="alert alert-danger mt-2">@TempData["Error"]</div>
         }
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success mt-2">
-                @TempData["Success"]
-            </div>
+            <div class="alert alert-success mt-2">@TempData["Success"]</div>
         }
 
         <main role="main" class="pb-3">

@@ -29,12 +29,48 @@ namespace ReadmoreWeb.Data.Seed
                     Email = adminEmail,
                     FirstName = "System",
                     LastName = "Administrator",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+
+                    Street = "Lindelaan 9",
+                    City = "Heverlee",
+                    PostalCode = "3001"
                 };
 
                 var result = await userManager.CreateAsync(adminUser, "Admin123!");
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+            else
+            {
+                var changed = false;
+
+                if (string.IsNullOrWhiteSpace(adminUser.Street))
+                {
+                    adminUser.Street = "Lindelaan 844";
+                    changed = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(adminUser.City))
+                {
+                    adminUser.City = "Heverlee";
+                    changed = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(adminUser.PostalCode))
+                {
+                    adminUser.PostalCode = "3001";
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    await userManager.UpdateAsync(adminUser);
+                }
+
+                if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
             }
         }
     }
