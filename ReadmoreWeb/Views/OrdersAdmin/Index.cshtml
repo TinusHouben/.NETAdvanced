@@ -28,12 +28,13 @@
     </div>
 </form>
 
-<table class="table">
+<table class="table table-sm align-middle">
     <thead>
         <tr>
             <th>Id</th>
             <th>Klant</th>
             <th>Email</th>
+            <th>Adres</th>
             <th>Status</th>
             <th>Datum</th>
             <th>Totaal</th>
@@ -44,10 +45,17 @@
         @foreach (var o in Model)
         {
             var fullName = (o.User?.FirstName + " " + o.User?.LastName).Trim();
+
+            var street = o.User?.Street ?? "";
+            var city = o.User?.City ?? "";
+            var postal = o.User?.PostalCode ?? "";
+            var address = (street + ", " + postal + " " + city).Trim().Trim(',');
+
             <tr>
                 <td>@o.Id</td>
                 <td>@(string.IsNullOrWhiteSpace(fullName) ? "-" : fullName)</td>
                 <td>@(o.User?.Email ?? "-")</td>
+                <td>@(string.IsNullOrWhiteSpace(address) ? "-" : address)</td>
                 <td>
                     @if (o.Status == "Completed")
                     {
@@ -65,7 +73,12 @@
                 <td>@o.CreatedAt</td>
                 <td>@o.TotalAmount</td>
                 <td>
-                    <a class="btn btn-sm btn-secondary" asp-action="Details" asp-route-id="@o.Id">Details</a>
+                    <a class="btn btn-sm btn-secondary"
+                       asp-action="Details"
+                       asp-route-id="@o.Id"
+                       asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")">
+                        Details
+                    </a>
                 </td>
             </tr>
         }

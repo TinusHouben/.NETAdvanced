@@ -15,32 +15,8 @@ public class OrdersAdminController : Controller
         _db = db;
     }
 
-    private static string NormalizeStatus(string? status)
-    {
-        if (string.IsNullOrWhiteSpace(status)) return "Pending";
-        return status == "Created" ? "Pending" : status;
-    }
-
-    private async Task NormalizeCreatedToPendingAsync()
-    {
-        var createdOrders = await _db.Orders
-            .Where(o => o.Status == "Created")
-            .ToListAsync();
-
-        if (createdOrders.Count == 0) return;
-
-        foreach (var o in createdOrders)
-        {
-            o.Status = "Pending";
-        }
-
-        await _db.SaveChangesAsync();
-    }
-
     public async Task<IActionResult> Index(string? q, string sort = "new", string? status = null)
     {
-        await NormalizeCreatedToPendingAsync();
-
         var query = _db.Orders
             .Include(o => o.User)
             .Include(o => o.Items)
@@ -59,7 +35,6 @@ public class OrdersAdminController : Controller
 
         if (!string.IsNullOrWhiteSpace(status) && status != "All")
         {
-            status = NormalizeStatus(status);
             query = query.Where(o => o.Status == status);
         }
 
@@ -76,7 +51,7 @@ public class OrdersAdminController : Controller
         return View(orders);
     }
 
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, string? returnUrl = null)
     {
         var order = await _db.Orders
             .Include(o => o.User)
@@ -86,26 +61,15 @@ public class OrdersAdminController : Controller
 
         if (order == null) return NotFound();
 
-        var normalized = NormalizeStatus(order.Status);
-        if (order.Status != normalized)
-        {
-            order.Status = normalized;
-            await _db.SaveChangesAsync();
-        }
-
-        ViewBag.AllowedStatuses = new List<string>
-        {
-            "Pending",
-            "Completed",
-            "Cancelled"
-        };
+        ViewBag.AllowedStatuses = new List<string> { "Pending", "Completed", "Cancelled" };
+        ViewBag.ReturnUrl = returnUrl;
 
         return View(order);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> MarkCompleted(int id)
+    public async Task<IActionResult> MarkCompleted(int id, string? returnUrl = null)
     {
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
         if (order == null) return NotFound();
@@ -113,21 +77,25 @@ public class OrdersAdminController : Controller
         order.Status = "Completed";
         await _db.SaveChangesAsync();
 
-        TempData["Message"] = "Bestelling werd succesvol afgerond.";
-        return RedirectToAction(nameof(Details), new { id });
+        TempData["Success"] = "Bestelling werd afgerond.";
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
+
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStatus(int id, string status)
+    public async Task<IActionResult> UpdateStatus(int id, string status, string? returnUrl = null)
     {
-        status = NormalizeStatus(status);
-
         var allowed = new HashSet<string> { "Pending", "Completed", "Cancelled" };
         if (!allowed.Contains(status))
         {
             TempData["Error"] = "Ongeldige status.";
-            return RedirectToAction(nameof(Details), new { id });
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+            return RedirectToAction(nameof(Index));
         }
 
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
@@ -136,7 +104,11 @@ public class OrdersAdminController : Controller
         order.Status = status;
         await _db.SaveChangesAsync();
 
-        TempData["Message"] = $"Status aangepast naar {status}.";
-        return RedirectToAction(nameof(Details), new { id });
+        TempData["Success"] = $"Status aangepast naar {status}.";
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
+
+        return RedirectToAction(nameof(Index));
     }
 }

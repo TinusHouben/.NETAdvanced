@@ -2,7 +2,13 @@
 
 @{
     var allowedStatuses = (List<string>)(ViewBag.AllowedStatuses ?? new List<string> { "Pending", "Completed", "Cancelled" });
+    var returnUrl = ViewBag.ReturnUrl as string;
+
     var fullName = (Model.User?.FirstName + " " + Model.User?.LastName).Trim();
+    var street = Model.User?.Street ?? "";
+    var city = Model.User?.City ?? "";
+    var postal = Model.User?.PostalCode ?? "";
+    var address = (street + ", " + postal + " " + city).Trim().Trim(',');
 }
 
 <h2>Bestelling @Model.Id</h2>
@@ -10,6 +16,7 @@
 <div class="card p-3 mb-3">
     <p><b>Klant:</b> @(string.IsNullOrWhiteSpace(fullName) ? "-" : fullName)</p>
     <p><b>Email:</b> @(Model.User?.Email ?? "-")</p>
+    <p><b>Adres:</b> @(string.IsNullOrWhiteSpace(address) ? "-" : address)</p>
     <p><b>Status:</b> @Model.Status</p>
     <p><b>Datum:</b> @Model.CreatedAt</p>
     <p><b>Totaal:</b> @Model.TotalAmount</p>
@@ -20,6 +27,7 @@
     <form asp-action="MarkCompleted" method="post" class="mb-3">
         @Html.AntiForgeryToken()
         <input type="hidden" name="id" value="@Model.Id" />
+        <input type="hidden" name="returnUrl" value="@returnUrl" />
         <button class="btn btn-success" type="submit">Markeer als afgerond</button>
     </form>
 }
@@ -33,6 +41,7 @@ else
 <form asp-action="UpdateStatus" method="post" class="card p-3 mb-3">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
 
     <label class="form-label"><b>Status aanpassen</b></label>
     <div class="row g-2">
@@ -77,4 +86,11 @@ else
     </tbody>
 </table>
 
-<a class="btn btn-outline-secondary" asp-action="Index">Terug</a>
+@if (!string.IsNullOrWhiteSpace(returnUrl))
+{
+    <a class="btn btn-outline-secondary" href="@returnUrl">Terug</a>
+}
+else
+{
+    <a class="btn btn-outline-secondary" asp-action="Index">Terug</a>
+}
