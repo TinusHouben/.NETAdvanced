@@ -43,6 +43,14 @@ public class ContactAdminController : Controller
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (msg == null) return NotFound();
+
+        var unread = msg.Replies.Where(r => r.Sender == "User" && !r.SeenByAdmin).ToList();
+        if (unread.Count > 0)
+        {
+            foreach (var r in unread) r.SeenByAdmin = true;
+            await _db.SaveChangesAsync();
+        }
+
         return View(msg);
     }
 
@@ -71,7 +79,9 @@ public class ContactAdminController : Controller
             ContactMessageId = id,
             Text = text,
             Sender = "Admin",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            SeenByAdmin = true,
+            SeenByUser = false
         });
 
         if (msg.Status == "New") msg.Status = "InProgress";
@@ -103,24 +113,5 @@ public class ContactAdminController : Controller
 
         TempData["Success"] = $"Status aangepast naar {status}.";
         return RedirectToAction(nameof(Details), new { id });
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var msg = await _db.ContactMessages
-            .Include(m => m.Replies)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (msg == null) return NotFound();
-
-        _db.ContactReplies.RemoveRange(msg.Replies);
-        _db.ContactMessages.Remove(msg);
-
-        await _db.SaveChangesAsync();
-
-        TempData["Success"] = "Contactbericht verwijderd.";
-        return RedirectToAction(nameof(Index));
     }
 }

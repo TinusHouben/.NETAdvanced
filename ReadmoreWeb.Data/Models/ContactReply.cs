@@ -18,4 +18,7 @@ public class ContactReply
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public string? SenderUserId { get; set; }
+
+    public bool SeenByUser { get; set; } = false;
+    public bool SeenByAdmin { get; set; } = false;
 }

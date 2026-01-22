@@ -104,6 +104,8 @@ builder.Services.AddScoped<IOrderAdminService, OrderAdminService>();
 
 builder.Services.AddScoped<IContactAdminService, ContactAdminService>();
 
+builder.Services.AddScoped<IContactBadgeService, ContactBadgeService>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 

@@ -1,7 +1,9 @@
 ﻿@using ReadmoreWeb.Services.Orders
 @using ReadmoreWeb.Services.Contact
+@using System.Security.Claims
 @inject IOrderAdminService OrderAdminService
 @inject IContactAdminService ContactAdminService
+@inject IContactBadgeService ContactBadgeService
 
 <!DOCTYPE html>
 <html lang="nl">
@@ -31,43 +33,50 @@
                     <ul class="navbar-nav me-auto mb-2 mb-sm-0">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
+                            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+                            var userUnread = string.IsNullOrWhiteSpace(userId)
+                            ? 0
+                            : await ContactBadgeService.GetUserUnreadCountAsync(userId);
+
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
-                                    Home
-                                </a>
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">
-                                    Books
-                                </a>
+                                <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">Books</a>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Orders" asp-action="My">
-                                    Mijn bestellingen
-                                </a>
+                                <a class="nav-link text-dark" asp-controller="Orders" asp-action="My">Mijn bestellingen</a>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Contact" asp-action="Index">
+                                <a class="nav-link text-dark d-flex align-items-center gap-1"
+                                   asp-controller="Contact"
+                                   asp-action="My">
                                     Contact
+                                    @if (userUnread > 0)
+                                    {
+                                        <span class="badge bg-danger">@userUnread</span>
+                                    }
                                 </a>
                             </li>
 
                             @if (User.IsInRole("Admin"))
                             {
-                                var pendingCount = await OrderAdminService.GetPendingCountAsync();
-                                var newContactCount = await ContactAdminService.GetNewCountAsync();
+                                var pendingOrders = await OrderAdminService.GetPendingCountAsync();
+                                var newTickets = await ContactAdminService.GetNewCountAsync();
+                                var adminUnread = await ContactBadgeService.GetAdminUnreadCountAsync();
+                                var contactAdminBadge = newTickets + adminUnread;
 
                                 <li class="nav-item">
                                     <a class="nav-link text-dark d-flex align-items-center gap-1"
                                        asp-controller="OrdersAdmin"
                                        asp-action="Index">
                                         Bestellingsbeheer
-                                        @if (pendingCount > 0)
+                                        @if (pendingOrders > 0)
                                         {
-                                            <span class="badge bg-danger">@pendingCount</span>
+                                            <span class="badge bg-danger">@pendingOrders</span>
                                         }
                                     </a>
                                 </li>
@@ -77,9 +86,9 @@
                                        asp-controller="ContactAdmin"
                                        asp-action="Index">
                                         Contactbeheer
-                                        @if (newContactCount > 0)
+                                        @if (contactAdminBadge > 0)
                                         {
-                                            <span class="badge bg-danger">@newContactCount</span>
+                                            <span class="badge bg-danger">@contactAdminBadge</span>
                                         }
                                     </a>
                                 </li>

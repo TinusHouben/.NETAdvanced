@@ -32,13 +32,11 @@ public class ContactController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Forbid();
 
-        // ✅ email automatisch invullen (user vult dit niet in)
         model.UserId = user.Id;
         model.Email = user.Email ?? user.UserName ?? "";
         model.Status = "New";
         model.CreatedAt = DateTime.UtcNow;
 
-        // ✅ we hebben Email net zelf gezet -> verwijder oude validation state
         ModelState.Remove(nameof(ContactMessage.Email));
         ModelState.Remove(nameof(ContactMessage.UserId));
         ModelState.Remove(nameof(ContactMessage.Status));
@@ -51,7 +49,7 @@ public class ContactController : Controller
         _db.ContactMessages.Add(model);
         await _db.SaveChangesAsync();
 
-        TempData["Success"] = "Je bericht werd verzonden. Je kan verder chatten via 'Mijn contactberichten'.";
+        TempData["Success"] = "Je bericht werd verzonden.";
         return RedirectToAction(nameof(My));
     }
 
@@ -81,6 +79,13 @@ public class ContactController : Controller
             .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
         if (msg == null) return NotFound();
+
+        var unread = msg.Replies.Where(r => r.Sender == "Admin" && !r.SeenByUser).ToList();
+        if (unread.Count > 0)
+        {
+            foreach (var r in unread) r.SeenByUser = true;
+            await _db.SaveChangesAsync();
+        }
 
         return View(msg);
     }
@@ -114,7 +119,9 @@ public class ContactController : Controller
             Text = text,
             Sender = "User",
             SenderUserId = userId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            SeenByUser = true,
+            SeenByAdmin = false
         });
 
         if (msg.Status == "New") msg.Status = "InProgress";
