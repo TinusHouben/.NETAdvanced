@@ -22,10 +22,11 @@ public class OrdersController : Controller
         _cart = cart;
     }
 
-    private static string NormalizeStatus(string? status)
+    private static bool HasAddress(ApplicationUser u)
     {
-        if (string.IsNullOrWhiteSpace(status)) return "Pending";
-        return status == "Created" ? "Pending" : status;
+        return !string.IsNullOrWhiteSpace(u.Street)
+            && !string.IsNullOrWhiteSpace(u.City)
+            && !string.IsNullOrWhiteSpace(u.PostalCode);
     }
 
     [HttpGet]
@@ -36,6 +37,15 @@ public class OrdersController : Controller
         {
             TempData["Error"] = "Je winkelmand is leeg.";
             return RedirectToAction("Index", "Cart");
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Forbid();
+
+        if (!HasAddress(user))
+        {
+            TempData["Error"] = "Vul eerst je adres in bij Profiel voordat je kan afrekenen.";
+            return RedirectToAction("Index", "Profile", new { returnUrl = Url.Action("Checkout", "Orders") });
         }
 
         return View(vm);
@@ -52,15 +62,18 @@ public class OrdersController : Controller
             return RedirectToAction("Index", "Cart");
         }
 
-        var userId = _userManager.GetUserId(User);
-        if (string.IsNullOrWhiteSpace(userId))
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Forbid();
+
+        if (!HasAddress(user))
         {
-            return Forbid();
+            TempData["Error"] = "Vul eerst je adres in bij Profiel voordat je kan afrekenen.";
+            return RedirectToAction("Index", "Profile", new { returnUrl = Url.Action("Checkout", "Orders") });
         }
 
         var order = new Order
         {
-            UserId = userId,
+            UserId = user.Id,
             CreatedAt = DateTime.UtcNow,
             TotalAmount = cart.Total,
             Status = "Pending"
@@ -102,7 +115,7 @@ public class OrdersController : Controller
 
         foreach (var o in orders)
         {
-            o.Status = NormalizeStatus(o.Status);
+            if (o.Status == "Created") o.Status = "Pending";
         }
 
         return View(orders);

@@ -47,6 +47,12 @@
                                 </a>
                             </li>
 
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">
+                                    Profiel
+                                </a>
+                            </li>
+
                             @if (User.IsInRole("Admin"))
                             {
                                 var pendingCount = await OrderAdminService.GetPendingCountAsync();
@@ -56,7 +62,6 @@
                                        asp-controller="OrdersAdmin"
                                        asp-action="Index">
                                         Bestellingsbeheer
-
                                         @if (pendingCount > 0)
                                         {
                                             <span class="badge bg-danger">@pendingCount</span>

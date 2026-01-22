@@ -1,0 +1,58 @@
+﻿@model ReadmoreWeb.Models.Profile.ProfileVm
+
+<h2>Mijn profiel</h2>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Voornaam</label>
+            <input class="form-control" asp-for="FirstName" />
+            <span class="text-danger" asp-validation-for="FirstName"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Achternaam</label>
+            <input class="form-control" asp-for="LastName" />
+            <span class="text-danger" asp-validation-for="LastName"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Telefoon</label>
+            <input class="form-control" asp-for="PhoneNumber" />
+            <span class="text-danger" asp-validation-for="PhoneNumber"></span>
+        </div>
+
+        <div class="col-md-12">
+            <label class="form-label">Straat + nummer</label>
+            <input class="form-control" asp-for="Street" />
+            <span class="text-danger" asp-validation-for="Street"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Stad</label>
+            <input class="form-control" asp-for="City" />
+            <span class="text-danger" asp-validation-for="City"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Postcode</label>
+            <input class="form-control" asp-for="PostalCode" />
+            <span class="text-danger" asp-validation-for="PostalCode"></span>
+        </div>
+
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Opslaan</button>
+
+            @if (ViewBag.ReturnUrl != null)
+            {
+                <a class="btn btn-outline-secondary ms-2" href="@ViewBag.ReturnUrl">Terug</a>
+            }
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
