@@ -5,27 +5,55 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Books">
 
-    <RefreshView
-        IsRefreshing="{Binding IsBusy}"
-        Command="{Binding LoadCommand}">
+    <Grid ColumnDefinitions="*,900,*" RowDefinitions="Auto,Auto,*" RowSpacing="12">
 
-        <CollectionView
-            ItemsSource="{Binding Books}"
-            EmptyView="No books">
+        <VerticalStackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
+            <Label Text="Books" Style="{StaticResource TitleLabel}" />
+            <Label Text="Browse the catalog from the API" Style="{StaticResource SubtitleLabel}" />
+        </VerticalStackLayout>
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame Margin="0,6" Padding="12">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="{Binding Title}" FontAttributes="Bold" />
-                            <Label Text="{Binding Author}" />
-                            <Label Text="{Binding Price, StringFormat='Price: {0:F2}'}" />
-                            <Label Text="{Binding PublishedDate, StringFormat='{}{0:yyyy-MM-dd}'}" />
-                        </VerticalStackLayout>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
+        <ActivityIndicator Grid.Column="1" Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Start" />
 
-        </CollectionView>
-    </RefreshView>
+        <RefreshView Grid.Column="1" Grid.Row="2"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding LoadCommand}">
+
+            <CollectionView ItemsSource="{Binding Books}"
+                            SelectionMode="None"
+                            EmptyView="No books">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Style="{StaticResource CardFrame}" Padding="14" Margin="0">
+                            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                                    <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                                    <Label Text="{Binding Author}" Style="{StaticResource SubtitleLabel}" />
+                                </VerticalStackLayout>
+
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Price, StringFormat='{}{0:F2} EUR'}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Start" />
+
+                                <Label Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding PublishedDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                       Style="{StaticResource SubtitleLabel}" />
+
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
 </ContentPage>

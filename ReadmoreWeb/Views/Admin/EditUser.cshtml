@@ -1,0 +1,36 @@
+﻿@model ReadmoreWeb.Data.Models.ApplicationUser
+
+@{
+    var roles = (List<string>)ViewBag.Roles;
+    var userRoles = (System.Collections.Generic.IList<string>)ViewBag.UserRoles;
+}
+
+<h2>Gebruiker beheren</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info">@TempData["Message"]</div>
+}
+
+<div class="card p-3">
+    <p><b>Email:</b> @Model.Email</p>
+    <p><b>Username:</b> @Model.UserName</p>
+    <p><b>Huidige rol:</b> @(userRoles.FirstOrDefault() ?? "Geen")</p>
+
+    <form asp-action="SetRole" method="post" class="mb-3">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <label class="form-label">Rol</label>
+        <select class="form-select" name="role">
+            @foreach (var r in roles)
+            {
+                <option value="@r" selected="@(userRoles.Contains(r) ? "selected" : null)">@r</option>
+            }
+        </select>
+        <button class="btn btn-success mt-2" type="submit">Rol opslaan</button>
+    </form>
+
+    <form asp-action="ToggleLock" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button class="btn btn-warning" type="submit">Blokkeer / Deblokkeer</button>
+    </form>
+</div>

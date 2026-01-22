@@ -27,6 +27,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ReadmoreDbContext>()
 .AddDefaultTokenProviders();
 
+var jwtKeyValue = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKeyValue))
+{
+    throw new Exception("Jwt:Key ontbreekt (User Secrets / environment variables niet geladen).");
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
@@ -35,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     var jwt = builder.Configuration.GetSection("Jwt");
-    var key = Encoding.UTF8.GetBytes(jwt["Key"]!);
+    var key = Encoding.UTF8.GetBytes(jwtKeyValue);
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -110,9 +116,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
-    app.UseHttpsRedirection();
 }
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

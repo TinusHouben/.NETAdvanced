@@ -1,17 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Class="ReadmoreMobile.Views.LoginPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Login">
 
-    <VerticalStackLayout Padding="20" Spacing="12">
+    <Grid ColumnDefinitions="*,520,*" RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Column="1" Spacing="12" VerticalOptions="Start">
 
-        <Entry Placeholder="Email" Text="{Binding Email}" Keyboard="Email" />
+            <VerticalStackLayout Spacing="2">
+                <Label Text="ReadMore" Style="{StaticResource TitleLabel}" />
+                <Label Text="Sign in to continue" Style="{StaticResource SubtitleLabel}" />
+            </VerticalStackLayout>
 
-        <Entry Placeholder="Password" Text="{Binding Password}" IsPassword="True" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
 
-        <Button Text="Login" Command="{Binding LoginCommand}" />
+                    <Frame Style="{StaticResource InputFrame}">
+                        <Entry Style="{StaticResource InputEntry}"
+                               Placeholder="Email"
+                               Text="{Binding Email}" />
+                    </Frame>
 
-        <Label Text="{Binding ErrorMessage}" TextColor="Red" />
+                    <Frame Style="{StaticResource InputFrame}">
+                        <Entry Style="{StaticResource InputEntry}"
+                               Placeholder="Password"
+                               IsPassword="True"
+                               Text="{Binding Password}" />
+                    </Frame>
 
-    </VerticalStackLayout>
+                    <Label Text="{Binding ErrorMessage}"
+                           IsVisible="{Binding HasError}"
+                           Style="{StaticResource DangerLabel}" />
+
+                    <Button Text="Login"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding LoginCommand}" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       HorizontalOptions="Center" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>

@@ -3,48 +3,88 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ReadmoreWeb.Data.Models;
 
-namespace ReadmoreWeb.Controllers
+namespace ReadmoreWeb.Controllers;
+
+[Authorize(Roles = "Admin")]
+public class AdminController : Controller
 {
-    [Authorize(Roles = "Admin")]
-    public class AdminController : Controller
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+
+    public AdminController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        _userManager = userManager;
+        _roleManager = roleManager;
+    }
 
-        public AdminController(UserManager<ApplicationUser> userManager)
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    public IActionResult Users()
+    {
+        var users = _userManager.Users.ToList();
+        return View(users);
+    }
+
+    public async Task<IActionResult> EditUser(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null) return NotFound();
+
+        var roles = _roleManager.Roles.Select(r => r.Name!).ToList();
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        ViewBag.Roles = roles;
+        ViewBag.UserRoles = userRoles;
+
+        return View(user);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SetRole(string id, string role)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null) return NotFound();
+
+        if (!await _roleManager.RoleExistsAsync(role))
         {
-            _userManager = userManager;
+            TempData["Message"] = "Rol bestaat niet.";
+            return RedirectToAction(nameof(EditUser), new { id });
         }
 
-        public IActionResult Users()
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Any())
         {
-            return View(_userManager.Users.ToList());
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Block(string id)
+        await _userManager.AddToRoleAsync(user, role);
+
+        TempData["Message"] = $"Rol gezet naar {role}.";
+        return RedirectToAction(nameof(EditUser), new { id });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ToggleLock(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null) return NotFound();
+
+        var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+
+        if (isLocked)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-
-            await _userManager.SetLockoutEndDateAsync(
-                user,
-                DateTimeOffset.UtcNow.AddYears(100)
-            );
-
-            return RedirectToAction(nameof(Users));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Unblock(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-
             await _userManager.SetLockoutEndDateAsync(user, null);
-
-            return RedirectToAction(nameof(Users));
+            TempData["Message"] = "Gebruiker gedeblokkeerd.";
         }
+        else
+        {
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            TempData["Message"] = "Gebruiker geblokkeerd.";
+        }
+
+        return RedirectToAction(nameof(EditUser), new { id });
     }
 }
