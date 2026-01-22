@@ -1,0 +1,49 @@
+﻿@model List<ReadmoreWeb.Data.Models.Order>
+
+<h2>Bestellingsbeheer</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-6">
+        <input class="form-control" name="q" value="@ViewBag.Q" placeholder="Zoek op email/naam/status" />
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" name="sort">
+            <option value="new" selected="@(ViewBag.Sort == "new" ? "selected" : null)">Nieuwste eerst</option>
+            <option value="old" selected="@(ViewBag.Sort == "old" ? "selected" : null)">Oudste eerst</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100" type="submit">Filter</button>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Klant</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Datum</th>
+            <th>Totaal</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            var fullName = (o.User?.FirstName + " " + o.User?.LastName).Trim();
+            <tr>
+                <td>@o.Id</td>
+                <td>@(string.IsNullOrWhiteSpace(fullName) ? "-" : fullName)</td>
+                <td>@(o.User?.Email ?? "-")</td>
+                <td>@o.Status</td>
+                <td>@o.CreatedAt</td>
+                <td>@o.TotalAmount</td>
+                <td>
+                    <a class="btn btn-sm btn-secondary" asp-action="Details" asp-route-id="@o.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
