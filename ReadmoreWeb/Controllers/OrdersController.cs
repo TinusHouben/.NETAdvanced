@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReadmoreWeb.Data;
 using ReadmoreWeb.Data.Models;
-using ReadmoreWeb.Models.Cart;
 using ReadmoreWeb.Services.Cart;
 
 namespace ReadmoreWeb.Controllers;
@@ -21,6 +20,12 @@ public class OrdersController : Controller
         _db = db;
         _userManager = userManager;
         _cart = cart;
+    }
+
+    private static string NormalizeStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return "Pending";
+        return status == "Created" ? "Pending" : status;
     }
 
     [HttpGet]
@@ -58,7 +63,7 @@ public class OrdersController : Controller
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
             TotalAmount = cart.Total,
-            Status = "Created"
+            Status = "Pending"
         };
 
         foreach (var item in cart.Items)
@@ -90,10 +95,15 @@ public class OrdersController : Controller
         var orders = await _db.Orders
             .AsNoTracking()
             .Include(o => o.Items)
-            .ThenInclude(i => i.Book)
+                .ThenInclude(i => i.Book)
             .Where(o => o.UserId == userId)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
+
+        foreach (var o in orders)
+        {
+            o.Status = NormalizeStatus(o.Status);
+        }
 
         return View(orders);
     }

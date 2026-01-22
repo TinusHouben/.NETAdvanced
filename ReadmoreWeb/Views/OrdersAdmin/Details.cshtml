@@ -1,14 +1,54 @@
 ﻿@model ReadmoreWeb.Data.Models.Order
 
+@{
+    var allowedStatuses = (List<string>)(ViewBag.AllowedStatuses ?? new List<string> { "Pending", "Completed", "Cancelled" });
+    var fullName = (Model.User?.FirstName + " " + Model.User?.LastName).Trim();
+}
+
 <h2>Bestelling @Model.Id</h2>
 
 <div class="card p-3 mb-3">
-    <p><b>Klant:</b> @Model.User?.FirstName @Model.User?.LastName</p>
-    <p><b>Email:</b> @Model.User?.Email</p>
+    <p><b>Klant:</b> @(string.IsNullOrWhiteSpace(fullName) ? "-" : fullName)</p>
+    <p><b>Email:</b> @(Model.User?.Email ?? "-")</p>
     <p><b>Status:</b> @Model.Status</p>
     <p><b>Datum:</b> @Model.CreatedAt</p>
     <p><b>Totaal:</b> @Model.TotalAmount</p>
 </div>
+
+@if (Model.Status != "Completed")
+{
+    <form asp-action="MarkCompleted" method="post" class="mb-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button class="btn btn-success" type="submit">Markeer als afgerond</button>
+    </form>
+}
+else
+{
+    <div class="alert alert-success mb-3">
+        Deze bestelling is afgerond.
+    </div>
+}
+
+<form asp-action="UpdateStatus" method="post" class="card p-3 mb-3">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <label class="form-label"><b>Status aanpassen</b></label>
+    <div class="row g-2">
+        <div class="col-md-6">
+            <select class="form-select" name="status">
+                @foreach (var s in allowedStatuses)
+                {
+                    <option value="@s" selected="@(Model.Status == s ? "selected" : null)">@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <button class="btn btn-primary w-100" type="submit">Opslaan</button>
+        </div>
+    </div>
+</form>
 
 <h4>Items</h4>
 
@@ -26,6 +66,7 @@
         {
             var title = i.Book?.Title ?? "-";
             var subtotal = i.UnitPrice * i.Quantity;
+
             <tr>
                 <td>@title</td>
                 <td>@i.Quantity</td>

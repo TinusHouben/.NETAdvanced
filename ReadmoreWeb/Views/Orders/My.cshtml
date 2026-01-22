@@ -19,15 +19,37 @@ else
 {
     foreach (var order in Model)
     {
+        var status = order.Status == "Created" ? "Pending" : order.Status;
+
         <div class="card mb-3">
             <div class="card-body">
-                <div><strong>Bestelling:</strong> @order.Id</div>
-                <div><strong>Datum:</strong> @order.CreatedAt</div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>Bestelling:</strong> @order.Id<br />
+                        <strong>Datum:</strong> @order.CreatedAt
+                    </div>
+                    <div>
+                        @if (status == "Completed")
+                        {
+                            <span class="badge bg-success">Completed</span>
+                        }
+                        else if (status == "Cancelled")
+                        {
+                            <span class="badge bg-danger">Cancelled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        }
+                    </div>
+                </div>
 
-                <ul class="mt-2 mb-0">
+                <ul class="mb-0">
                     @foreach (var item in order.Items)
                     {
-                        <li>@item.Book?.Title - @item.Quantity x @item.UnitPrice</li>
+                        <li>
+                            @item.Book?.Title – @item.Quantity × @item.UnitPrice
+                        </li>
                     }
                 </ul>
             </div>

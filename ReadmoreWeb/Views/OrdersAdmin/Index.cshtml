@@ -3,16 +3,27 @@
 <h2>Bestellingsbeheer</h2>
 
 <form method="get" class="row g-2 mb-3">
-    <div class="col-md-6">
+    <div class="col-md-5">
         <input class="form-control" name="q" value="@ViewBag.Q" placeholder="Zoek op email/naam/status" />
     </div>
+
     <div class="col-md-3">
+        <select class="form-select" name="status">
+            <option value="All" selected="@(ViewBag.Status == "All" ? "selected" : null)">Alle statussen</option>
+            <option value="Pending" selected="@(ViewBag.Status == "Pending" ? "selected" : null)">Pending</option>
+            <option value="Completed" selected="@(ViewBag.Status == "Completed" ? "selected" : null)">Completed</option>
+            <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled" ? "selected" : null)">Cancelled</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
         <select class="form-select" name="sort">
             <option value="new" selected="@(ViewBag.Sort == "new" ? "selected" : null)">Nieuwste eerst</option>
             <option value="old" selected="@(ViewBag.Sort == "old" ? "selected" : null)">Oudste eerst</option>
         </select>
     </div>
-    <div class="col-md-3">
+
+    <div class="col-md-2">
         <button class="btn btn-primary w-100" type="submit">Filter</button>
     </div>
 </form>
@@ -37,7 +48,20 @@
                 <td>@o.Id</td>
                 <td>@(string.IsNullOrWhiteSpace(fullName) ? "-" : fullName)</td>
                 <td>@(o.User?.Email ?? "-")</td>
-                <td>@o.Status</td>
+                <td>
+                    @if (o.Status == "Completed")
+                    {
+                        <span class="badge bg-success">Completed</span>
+                    }
+                    else if (o.Status == "Cancelled")
+                    {
+                        <span class="badge bg-danger">Cancelled</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    }
+                </td>
                 <td>@o.CreatedAt</td>
                 <td>@o.TotalAmount</td>
                 <td>
